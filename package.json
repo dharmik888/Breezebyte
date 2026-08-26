@@ -11,7 +11,7 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma generate && prisma skills sync || exit 0"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
