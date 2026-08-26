@@ -1,0 +1,85 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Node {
+  id                  String      @id @default(uuid())
+  label               String
+  type                String      // 'village' | 'hospital' | 'pharmacy' | 'ambulance-depot'
+  lat                 Float
+  lng                 Float
+  capacity            Int?
+  occupied            Int?
+  specialties         String?     // JSON string
+  medicines           String?     // JSON string for Record<string, number>
+  ambulanceCount      Int?
+  availableAmbulances Int?
+
+  // Relations
+  sourceEdges Edge[]      @relation("SourceNode")
+  targetEdges Edge[]      @relation("TargetNode")
+  ambulances  Ambulance[]
+}
+
+model Edge {
+  id       String  @id @default(uuid())
+  sourceId String
+  targetId String
+  weight   Float
+  blocked  Boolean @default(false)
+
+  source Node @relation("SourceNode", fields: [sourceId], references: [id])
+  target Node @relation("TargetNode", fields: [targetId], references: [id])
+}
+
+model Ambulance {
+  id         String  @id @default(uuid())
+  nodeId     String
+  status     String  // 'idle' | 'busy' | 'maintenance'
+  patientId  String?
+  etaMinutes Int?
+
+  node Node @relation(fields: [nodeId], references: [id])
+}
+
+model PatientRequest {
+  id                  String  @id @default(uuid())
+  villageId           String
+  urgency             String
+  specialty           String
+  createdAt           Float
+  assignedHospitalId  String?
+  assignedAmbulanceId String?
+  status              String
+  route               String? // JSON array
+  ambulanceRoute      String? // JSON array
+  estimatedArrival    Float?
+  waitTimeMinutes     Int?
+}
+
+model MedicineBatch {
+  id         String @id @default(uuid())
+  name       String
+  hospitalId String
+  stock      Int
+  threshold  Int
+}
+
+model DecisionLogEntry {
+  id               String  @id @default(uuid())
+  timestamp        Float
+  requestId        String
+  rationale        String
+  cost             Float
+  costRange        String
+  durationMinutes  Float
+  path             String  // JSON
+  hospitalId       String
+  ambulanceId      String?
+  medicinePrepared String? // JSON
+}
